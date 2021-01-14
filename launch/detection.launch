@@ -1,8 +1,11 @@
 <launch>
   <include file="$(find openni2_launch)/launch/openni2.launch" />
+  
   <node name="filter" pkg="detection" type="filter"/>
+  <param name="camera_topic" value="/camera/ir/image_raw" />
+
   <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
-    <arg name="camera_name" value="/camera/ir"/>
-    <arg name="image_topic" value="image_raw"/>
+    <arg name="camera_name" value=""/>
+    <arg name="image_topic" value="/filtered_camera/image"/>
   </include>
 </launch>  
