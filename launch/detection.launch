@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find openni2_launch)/launch/openni2.launch" />
+  <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
+    <arg name="camera_name" value="/camera/rgb"/>
+    <arg name="image_topic" value="image_raw"/>
+  </include>
+</launch>  
