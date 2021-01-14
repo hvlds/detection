@@ -50,6 +50,7 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>image_transport</build_depend>
   <build_depend>roslaunch</build_depend>
   <build_depend>apriltag_ros</build_depend>
   <build_depend>openni2_camera</build_depend>
@@ -57,19 +58,18 @@
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>cv_bridge</build_depend>
-  <build_depend>image_transport</build_depend>
 
+  <build_export_depend>image_transport</build_export_depend>
   <build_export_depend>apriltag_ros</build_export_depend>
   <build_export_depend>openni2_camera</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>cv_bridge</build_export_depend>
-  <build_export_depend>image_transport</build_export_depend>
 
-  <exec_depend>apriltag_ros</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>image_transport</exec_depend>
+  <exec_depend>apriltag_ros</exec_depend>
   <exec_depend>image_proc</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>
   <exec_depend>nodelet</exec_depend>

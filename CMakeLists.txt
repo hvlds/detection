@@ -11,5 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
 )
 
-add_executable(listener src/listener.cpp)
-target_link_libraries(listener ${catkin_LIBRARIES})
+find_package(OpenCV REQUIRED)
+
+catkin_package()
+
+include_directories(include ${catkin_INCLUDE_DIRS})
+
+add_executable(filter src/filter.cpp)
+target_link_libraries(filter ${catkin_LIBRARIES})
