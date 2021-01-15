@@ -1,9 +1,13 @@
 <launch>
+  <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
+    <param name="port" value="/dev/ttyACM0" />
+    <param name="baud" value="115200" />
+  </node>
   <include file="$(find openni2_launch)/launch/openni2.launch" />
-  
-  <node name="filter" pkg="detection" type="filter"/>
-  <param name="camera_topic" value="/camera/ir/image_raw" />
-
+  <node name="filter" pkg="detection" type="filter" output="screen">
+    <param name="camera_topic" value="/camera/ir/image_raw" />
+    <param name="arduino_topic" value="/brightness" />
+  </node>
   <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
     <arg name="camera_name" value=""/>
     <arg name="image_topic" value="/filtered_camera/image"/>

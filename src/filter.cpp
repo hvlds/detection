@@ -8,8 +8,8 @@
 
 image_transport::Publisher image_pub;
 
-void arduinoCallback(const int& msg) {
-
+void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
+    ROS_INFO("Brightness: [%i]", msg->data);
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& img)
@@ -35,10 +35,13 @@ int main(int argc, char **argv)
     std::string camera_topic;
     n.param<std::string>("camera_topic", camera_topic, "/camera/ir/image_raw");
 
+    std::string arduino_topic;
+    n.param<std::string>("arduino_topic", arduino_topic, "/brightness");
+
     image_transport::ImageTransport it(n);
     image_pub = it.advertise("filtered_camera/image", 1);
 
-    ros::Subscriber arduino_sub = n.subscribe("brightness", 10, arduinoCallback);
+    ros::Subscriber arduino_sub = n.subscribe(arduino_topic, 1000, arduinoCallback);
 
     ros::Subscriber image_sub = n.subscribe(camera_topic, 10, imageCallback);
     ros::spin();
