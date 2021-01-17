@@ -8,6 +8,8 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
 
+#include <iostream>
+
 image_transport::Publisher image_pub;
 int brightness = -1;
 
@@ -22,11 +24,11 @@ void imageCallback(const sensor_msgs::ImageConstPtr& img) {
     cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO16);
     cv::Mat img8(480, 640, CV_8UC1);
     cv_ptr->image.convertTo(img8, CV_8UC1);
-    cv::imshow("8-bit Mono", img8);
 
     // Publish the image in new topic (can be processed from rqt_image_view)
     sensor_msgs::ImagePtr msg;
     msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", img8).toImageMsg();
+    msg->header = img->header; 
     image_pub.publish(msg);
 }
 
