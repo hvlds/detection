@@ -1,5 +1,6 @@
 {
     "cSpell.enabled": false,
+    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
     "ros.distro": "noetic",
     "python.autoComplete.extraPaths": [
         "/opt/ros/noetic/lib/python3/dist-packages"

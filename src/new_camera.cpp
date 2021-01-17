@@ -1,19 +1,19 @@
-#include "ros/ros.h"
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/CameraInfo.h>
+#include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
-#include <opencv2/highgui/highgui.hpp>
-#include <cv_bridge/cv_bridge.h>
 #include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
-#include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/time_synchronizer.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/Image.h>
+
+#include <opencv2/highgui/highgui.hpp>
 #include <string>
 
+#include "ros/ros.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     ros::init(argc, argv, "new_camera");
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
