@@ -23,5 +23,5 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_executable(filter src/filter.cpp)
 target_link_libraries(filter ${catkin_LIBRARIES})
 
-add_executable(new_camera src/new_camera.cpp)
-target_link_libraries(new_camera ${catkin_LIBRARIES})
+add_executable(synchronizer src/synchronizer.cpp)
+target_link_libraries(synchronizer ${catkin_LIBRARIES})

@@ -14,7 +14,7 @@
 #include "ros/ros.h"
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "new_camera");
+    ros::init(argc, argv, "synchronizer");
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
 
