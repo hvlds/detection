@@ -25,3 +25,6 @@ target_link_libraries(filter ${catkin_LIBRARIES})
 
 add_executable(synchronizer src/synchronizer.cpp)
 target_link_libraries(synchronizer ${catkin_LIBRARIES})
+
+add_executable(analyser src/analyser.cpp)
+target_link_libraries(analyser ${catkin_LIBRARIES})

@@ -9,6 +9,8 @@
 
   <node name="filter" pkg="detection" type="filter" output="screen"/>
 
+  <node name="analyser" pkg="detection" type="analyser" output="screen"/>
+
   <include file="$(find detection)/launch/apriltag.launch">
     <arg name="camera_name" value="/camera/ir/"/>
     <arg name="image_topic" value="/image_filtered"/>
