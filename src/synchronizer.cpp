@@ -19,10 +19,16 @@ int main(int argc, char **argv) {
     image_transport::ImageTransport it(n);
 
     std::string filtered_image_topic;
-    n.getParam("/detection/filtered_image_topic", filtered_image_topic);
+    if (n.getParam("/detection/filtered_image_topic", filtered_image_topic) == false) {
+        ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
+        filtered_image_topic = "/camera/ir/image_filtered";
+    }
 
     std::string camera_info_topic;
-    n.getParam("/detection/camera_info", camera_info_topic);
+    if (n.getParam("/detection/camera_info", camera_info_topic) == false) {
+        ROS_ERROR("Failed to get param '/detection/camera_info'");
+        camera_info_topic = "/camera/ir/camera_info";
+    }
 
     image_transport::SubscriberFilter image_sub(it, filtered_image_topic, 10);
     message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(n, camera_info_topic, 10);
