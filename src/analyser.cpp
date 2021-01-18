@@ -19,16 +19,15 @@ void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& img) {
-    // Recieve IR frame from camera in MONO16 (GRAY16 in OpenNI2) format
+    // Recieve IR filtered frame as RGB8 format 
     cv_bridge::CvImagePtr cv_ptr;
-    cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO16);
-    
-    cv::Mat img8(480, 640, CV_8UC1);
-    cv_ptr->image.convertTo(img8, CV_8UC1);
+    cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
 
-    // Convert image gray -> rgb -> hsv
-    cv::Mat img_rgb, img_hsv;
-    cv::cvtColor(img8, img_rgb, CV_GRAY2RGB);
+    cv::Mat img_rgb(480, 640, CV_8UC3);
+    cv_ptr->image.convertTo(img_rgb, CV_8UC3);
+    
+    // Convert to HSV in order to extract Brightness 
+    cv::Mat img_hsv;
     cv::cvtColor(img_rgb, img_hsv, CV_RGB2HSV);
 
     cv::Scalar m = cv::mean(img_hsv);

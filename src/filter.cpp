@@ -18,9 +18,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& img) {
     cv::Mat img8(480, 640, CV_8UC1);
     cv_ptr->image.convertTo(img8, CV_8UC1);
 
+    // Convert from gray to rgb
+    cv::Mat img_rgb;
+    cv::cvtColor(img8, img_rgb, CV_GRAY2RGB);
+
     // Publish the image in new topic (can be processed from rqt_image_view)
     sensor_msgs::ImagePtr msg;
-    msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", img8).toImageMsg();
+    msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", img_rgb).toImageMsg();
 
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
