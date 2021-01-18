@@ -18,8 +18,14 @@ int main(int argc, char **argv) {
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
 
-    image_transport::SubscriberFilter image_sub(it, "/camera/ir/image_filtered", 10);
-    message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(n, "/camera/ir/camera_info", 10);
+    std::string filtered_image_topic;
+    n.getParam("/detection/filtered_image_topic", filtered_image_topic);
+
+    std::string camera_info_topic;
+    n.getParam("/detection/camera_info", camera_info_topic);
+
+    image_transport::SubscriberFilter image_sub(it, filtered_image_topic, 10);
+    message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(n, camera_info_topic, 10);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), image_sub, info_sub);

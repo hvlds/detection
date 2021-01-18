@@ -35,18 +35,22 @@ void imageCallback(const sensor_msgs::ImageConstPtr& img) {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "filter");
     ros::NodeHandle n;
+    image_transport::ImageTransport it(n);
 
     std::string camera_topic;
-    n.param<std::string>("camera_topic", camera_topic, "/camera/ir/image_raw");
+    n.getParam("/detection/camera_topic", camera_topic);
+    // n.param<std::string>("camera_topic", camera_topic, "/camera/ir/image_raw");
 
     std::string arduino_topic;
-    n.param<std::string>("arduino_topic", arduino_topic, "/brightness");
+    n.getParam("/detection/arduino_topic", arduino_topic);
+    // n.param<std::string>("arduino_topic", arduino_topic, "/brightness");
 
     ros::Subscriber image_sub = n.subscribe(camera_topic, 10, imageCallback);
     ros::Subscriber arduino_sub = n.subscribe(arduino_topic, 10, arduinoCallback);
 
-    image_transport::ImageTransport it(n);
-    image_pub = it.advertise("/camera/ir/image_filtered", 1);
+    std::string filtered_image_topic;
+    n.getParam("/detection/filtered_image_topic", filtered_image_topic);
+    image_pub = it.advertise(filtered_image_topic, 1);
 
     ros::spin();
 

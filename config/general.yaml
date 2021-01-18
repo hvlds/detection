@@ -1,0 +1,12 @@
+# General configuration for the detection.launch file
+detection:
+  camera_name: "/camera/ir"
+  camera_topic: "/camera/ir/image_raw"
+  original_image_topic: "/image_raw"
+  filtered_image_topic: "/camera/ir/image_filtered"
+  camera_info: "/camera/ir/camera_info"
+  arduino_topic: "/brightness"
+  
+serial_node:
+  port: "/dev/ttyACM0"
+  baud: 115200
