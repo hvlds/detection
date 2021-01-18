@@ -1,5 +1,5 @@
 <launch>
-  <rosparam command="load" file="$(find detection)/config/general.yaml"/>
+  <rosparam command="load" file="$(find detection)/config/detection/general.yaml"/>
 
   <node name="serial_node" pkg="rosserial_python" type="serial_node.py"/>
 
@@ -9,7 +9,7 @@
 
   <node name="filter" pkg="detection" type="filter" output="screen"/>
 
-  <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
+  <include file="$(find detection)/launch/apriltag.launch">
     <arg name="camera_name" value="/camera/ir/"/>
     <arg name="image_topic" value="/image_filtered"/>
   </include>
