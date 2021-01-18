@@ -5,7 +5,7 @@
 
   <node name="synchronizer" pkg="detection" type="synchronizer"/>
 
-  <include file="$(find openni2_launch)/launch/openni2.launch"/>
+  <include file="$(find detection)/launch/openni2.launch"/>
 
   <node name="filter" pkg="detection" type="filter" output="screen"/>
 
