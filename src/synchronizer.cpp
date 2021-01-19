@@ -18,20 +18,22 @@ int main(int argc, char **argv) {
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
 
-    std::string filtered_image_topic;
-    if (n.getParam("/detection/filtered_image_topic", filtered_image_topic) == false) {
+    std::string camera_name;
+    if (n.getParam("/detection/filtered_camera_name", camera_name) == false) {
+        ROS_ERROR("Failed to get param '/detection/filtered_camera_name'");
+        camera_name = "/filtered_camera";
+    }
+
+    std::string image_topic;
+    if (n.getParam("/detection/filtered_image_topic", image_topic) == false) {
         ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
-        filtered_image_topic = "/camera/ir/image_filtered";
+        image_topic = "/camera/ir/image_filtered";
     }
 
-    std::string camera_info_topic;
-    if (n.getParam("/detection/camera_info", camera_info_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/camera_info'");
-        camera_info_topic = "/camera/ir/camera_info";
-    }
-
-    image_transport::SubscriberFilter image_sub(it, filtered_image_topic, 10);
-    message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(n, camera_info_topic, 10);
+    image_transport::SubscriberFilter image_sub(
+        it, camera_name + image_topic, 10);
+    message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(
+        n, camera_name + "/camera_info", 10);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), image_sub, info_sub);

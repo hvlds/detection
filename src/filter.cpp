@@ -158,5 +158,4 @@ void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
 void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info) {
     sensor_msgs::CameraInfo camera_info;
     camera_info_pub.publish(*info);
-    ROS_INFO("CALLBACK!!!");
 }

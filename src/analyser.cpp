@@ -18,14 +18,14 @@ void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& img) {
-    // Recieve IR filtered frame as RGB8 format 
+    // Recieve IR filtered frame as RGB8 format
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
 
     cv::Mat img_rgb(480, 640, CV_8UC3);
     cv_ptr->image.convertTo(img_rgb, CV_8UC3);
-    
-    // Convert to HSV in order to extract Brightness 
+
+    // Convert to HSV in order to extract Brightness
     cv::Mat img_hsv;
     cv::cvtColor(img_rgb, img_hsv, CV_RGB2HSV);
 
@@ -44,14 +44,22 @@ int main(int argc, char** argv) {
         arduino_topic = "/brightness";
     }
 
-    std::string filtered_image_topic;
-    if (n.getParam("/detection/filtered_image_topic", filtered_image_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
-        filtered_image_topic = "/camera/ir/image_filtered";
+    std::string camera_name;
+    if (n.getParam("/detection/filtered_camera_name", camera_name) == false) {
+        ROS_ERROR("Failed to get param '/detection/filtered_camera_name'");
+        camera_name = "/filtered_camera";
     }
 
-    ros::Subscriber filtered_image_sub = n.subscribe(filtered_image_topic, 10, imageCallback);
-    ros::Subscriber arduino_sub = n.subscribe(arduino_topic, 10, arduinoCallback);
+    std::string image_topic;
+    if (n.getParam("/detection/filtered_image_topic", image_topic) == false) {
+        ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
+        image_topic = "/image";
+    }
+
+    ros::Subscriber image_sub = n.subscribe(
+        camera_name + image_topic, 10, imageCallback);
+    ros::Subscriber arduino_sub = n.subscribe(
+        arduino_topic, 10, arduinoCallback);
 
     ros::spin();
 
