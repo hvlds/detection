@@ -14,6 +14,7 @@ ros::Subscriber image_sub;
 bool is_ir = true;
 bool needs_change = false;
 int count = 0;
+int count_limit = 20;
 
 void infraredCallback(const sensor_msgs::ImageConstPtr& img) {
     // Recieve IR frame from camera in MONO16 (GRAY16 in OpenNI2) format
@@ -35,7 +36,8 @@ void infraredCallback(const sensor_msgs::ImageConstPtr& img) {
     image_pub.publish(msg);
 
     count++;
-    if (count > 100) {
+    if (count > count_limit) {
+        count = 0;
         is_ir = false;
         needs_change = true;
     }
@@ -57,9 +59,10 @@ void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
     image_pub.publish(msg);
 
     count++;
-    if (count > 10) {
+    if (count > count_limit) {
         count = 0;
         is_ir = true;
+        needs_change = true;
     }
 }
 
@@ -94,9 +97,9 @@ int main(int argc, char** argv) {
         filtered_image_topic = "/image_filtered";
     }
 
-    image_pub = it.advertise(filtered_image_topic, 1);
     image_sub = n.subscribe(
                 ir_camera_name + raw_image_topic, 1, infraredCallback);
+    image_pub = it.advertise(filtered_image_topic, 1);
                 
     while (ros::ok()) {
         if (is_ir == false && needs_change == true) {
@@ -104,7 +107,13 @@ int main(int argc, char** argv) {
             image_sub = n.subscribe(
                 rgb_camera_name + raw_image_topic, 1, rgbCallback);
             needs_change = false;
-        } 
+        } else if (is_ir == true && needs_change == true) {
+            image_sub.shutdown();
+            image_sub = n.subscribe(
+                ir_camera_name + raw_image_topic, 1, infraredCallback);
+            needs_change = false;
+        }
+
         ros::spinOnce();
         rate.sleep();
     }
