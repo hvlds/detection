@@ -9,7 +9,6 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
 
-image_transport::Publisher image_pub;
 int brightness = -1;
 
 void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
@@ -53,8 +52,6 @@ int main(int argc, char** argv) {
 
     ros::Subscriber filtered_image_sub = n.subscribe(filtered_image_topic, 10, imageCallback);
     ros::Subscriber arduino_sub = n.subscribe(arduino_topic, 10, arduinoCallback);
-
-    image_pub = it.advertise(filtered_image_topic, 1);
 
     ros::spin();
 

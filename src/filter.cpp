@@ -11,7 +11,7 @@
 
 image_transport::Publisher image_pub;
 
-void imageCallback(const sensor_msgs::ImageConstPtr& img) {
+void infraredCallback(const sensor_msgs::ImageConstPtr& img) {
     // Recieve IR frame from camera in MONO16 (GRAY16 in OpenNI2) format
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO16);
@@ -31,27 +31,58 @@ void imageCallback(const sensor_msgs::ImageConstPtr& img) {
     image_pub.publish(msg);
 }
 
+void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
+    // Recieve RGB frame from camera in RGB8 format
+    cv_bridge::CvImagePtr cv_ptr;
+    cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
+    cv::Mat img_rgb(480, 640, CV_8UC3);
+    cv_ptr->image.convertTo(img_rgb, CV_8UC3);
+
+    // Publish the image in new topic (can be processed from rqt_image_view)
+    sensor_msgs::ImagePtr msg;
+    msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", img_rgb).toImageMsg();
+
+    // Publish the new formatted image with same header as the input image
+    msg->header = img->header;
+    image_pub.publish(msg);
+}
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "filter");
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
 
     // Assign parsed parameters from ./config/detection/general.yaml
-    std::string camera_topic;
-    if (n.getParam("/detection/camera_topic", camera_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/camera_topic'");
-        camera_topic = "/camera/ir/image_raw";
+    std::string ir_camera_name;
+    if (n.getParam("/detection/ir_camera_name", ir_camera_name) == false) {
+        ROS_ERROR("Failed to get param '/detection/ir_camera_name'");
+        ir_camera_name = "/camera/ir";
+    }
+
+    std::string rgb_camera_name;
+    if (n.getParam("/detection/rgb_camera_name", rgb_camera_name) == false) {
+        ROS_ERROR("Failed to get param '/detection/rgb_camera_name'");
+        rgb_camera_name = "/camera/rgb";
+    }
+
+    std::string raw_image_topic;
+    if (n.getParam("/detection/raw_image_topic", raw_image_topic) == false) {
+        ROS_ERROR("Failed to get param '/detection/raw_image_topic'");
+        raw_image_topic = "/image_raw";
     }
 
     std::string filtered_image_topic;
     if (n.getParam("/detection/filtered_image_topic", filtered_image_topic) == false) {
         ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
-        filtered_image_topic = "/camera/ir/image_filtered";
+        filtered_image_topic = "/image_filtered";
     }
 
-    ros::Subscriber image_sub = n.subscribe(camera_topic, 10, imageCallback);
+    ros::Subscriber ir_image_sub = n.subscribe(
+        ir_camera_name + raw_image_topic, 10, infraredCallback);
+    // ros::Subscriber rgb_image_sub = n.subscribe(
+    //     rgb_camera_name + raw_image_topic, 10, rgbCallback);
 
-    image_pub = it.advertise(filtered_image_topic, 1);
+    image_pub = it.advertise(ir_camera_name + filtered_image_topic, 1);
 
     ros::spin();
 
