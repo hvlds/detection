@@ -1,11 +1,13 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
+#include "message_filters/subscriber.h"
 
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
 
 #include "ros/ros.h"
+#include "sensor_msgs/CameraInfo.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
 
@@ -18,10 +20,11 @@ ros::Subscriber camera_info_sub;
 bool is_ir = true;
 bool needs_change = false;
 int count = 0;
-int count_limit = 20;
+int count_limit = 40;
 
 void irCallback(const sensor_msgs::ImageConstPtr& img);
 void rgbCallback(const sensor_msgs::ImageConstPtr& img);
+void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info);
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "filter");
@@ -60,23 +63,38 @@ int main(int argc, char** argv) {
         filtered_image_topic = "/image";
     }
 
+    // Image publisher and subscriber
     image_sub = n.subscribe(
         ir_camera_name + raw_image_topic, 1, irCallback);
     image_pub = it.advertise(
         filtered_camera_name + filtered_image_topic, 1);
+
+    // Camera Info publisher and subscriber
+    camera_info_sub = n.subscribe(
+        ir_camera_name + "/camera_info", 1, cameraInfoCallback);
     camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(
         filtered_camera_name + "/camera_info", 1);
-                
+
     while (ros::ok()) {
         if (is_ir == false && needs_change == true) {
             image_sub.shutdown();
+            camera_info_sub.shutdown();
+
             image_sub = n.subscribe(
                 rgb_camera_name + raw_image_topic, 1, rgbCallback);
+            camera_info_sub = n.subscribe(
+                rgb_camera_name + "/camera_info", 1, cameraInfoCallback);
+
             needs_change = false;
         } else if (is_ir == true && needs_change == true) {
             image_sub.shutdown();
+            camera_info_sub.shutdown();
+
             image_sub = n.subscribe(
                 ir_camera_name + raw_image_topic, 1, irCallback);
+            camera_info_sub = n.subscribe(
+                ir_camera_name + "/camera_info", 1, cameraInfoCallback);
+
             needs_change = false;
         }
 
@@ -135,4 +153,10 @@ void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
         is_ir = true;
         needs_change = true;
     }
+}
+
+void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info) {
+    sensor_msgs::CameraInfo camera_info;
+    camera_info_pub.publish(*info);
+    ROS_INFO("CALLBACK!!!");
 }
