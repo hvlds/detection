@@ -10,6 +10,10 @@
 #include "std_msgs/String.h"
 
 image_transport::Publisher image_pub;
+ros::Subscriber image_sub;
+bool is_ir = true;
+bool needs_change = false;
+int count = 0;
 
 void infraredCallback(const sensor_msgs::ImageConstPtr& img) {
     // Recieve IR frame from camera in MONO16 (GRAY16 in OpenNI2) format
@@ -29,6 +33,12 @@ void infraredCallback(const sensor_msgs::ImageConstPtr& img) {
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
     image_pub.publish(msg);
+
+    count++;
+    if (count > 100) {
+        is_ir = false;
+        needs_change = true;
+    }
 }
 
 void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
@@ -45,12 +55,19 @@ void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
     image_pub.publish(msg);
+
+    count++;
+    if (count > 10) {
+        count = 0;
+        is_ir = true;
+    }
 }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "filter");
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
+    ros::Rate rate(10);
 
     // Assign parsed parameters from ./config/detection/general.yaml
     std::string ir_camera_name;
@@ -77,14 +94,22 @@ int main(int argc, char** argv) {
         filtered_image_topic = "/image_filtered";
     }
 
-    ros::Subscriber ir_image_sub = n.subscribe(
-        ir_camera_name + raw_image_topic, 10, infraredCallback);
-    // ros::Subscriber rgb_image_sub = n.subscribe(
-    //     rgb_camera_name + raw_image_topic, 10, rgbCallback);
+    image_pub = it.advertise(filtered_image_topic, 1);
+    image_sub = n.subscribe(
+                ir_camera_name + raw_image_topic, 1, infraredCallback);
+                
+    while (ros::ok()) {
+        if (is_ir == false && needs_change == true) {
+            image_sub.shutdown();
+            image_sub = n.subscribe(
+                rgb_camera_name + raw_image_topic, 1, rgbCallback);
+            needs_change = false;
+        } 
+        ros::spinOnce();
+        rate.sleep();
+    }
 
-    image_pub = it.advertise(ir_camera_name + filtered_image_topic, 1);
-
-    ros::spin();
+    // ros::spin();
 
     return 0;
 }
