@@ -32,6 +32,7 @@ class FilteredCamera {
     ros::Publisher ir_flag_pub;
     ros::Subscriber image_sub;
     ros::Subscriber camera_info_sub;
+    ros::Subscriber toggle_camera_sub;
     ros::NodeHandle* nh;
 
    public:
@@ -39,5 +40,6 @@ class FilteredCamera {
     void ir_callback(const sensor_msgs::ImageConstPtr& img);
     void rgb_callback(const sensor_msgs::ImageConstPtr& img);
     void camera_info_callback(const sensor_msgs::CameraInfo::ConstPtr& info);
+    void toggle_camera_callback(const std_msgs::Bool::ConstPtr& msg);
     void toggle_camera_subscription();
 };

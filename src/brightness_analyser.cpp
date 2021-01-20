@@ -22,6 +22,9 @@ BrightnessAnalyser::BrightnessAnalyser(ros::NodeHandle* nh) {
         image_topic = "/image";
     }
 
+    this->toggle_camera_pub = this->nh->advertise<std_msgs::Bool>(
+        "brightness_analyser/toggle_camera", 1);
+
     this->image_sub = nh->subscribe(
         camera_name + image_topic, 10, &BrightnessAnalyser::image_callback, this);
     this->arduino_sub = nh->subscribe(
@@ -36,7 +39,6 @@ void BrightnessAnalyser::ir_state_callback(const std_msgs::Bool::ConstPtr&  msg)
 
 void BrightnessAnalyser::arduino_callback(const std_msgs::Int32::ConstPtr& msg) {
     this->arduino_brightness = msg->data;
-    ROS_INFO("Arduino Brightness: %i", this->arduino_brightness);
 }
 
 void BrightnessAnalyser::image_callback(const sensor_msgs::ImageConstPtr& img) {
@@ -53,11 +55,12 @@ void BrightnessAnalyser::image_callback(const sensor_msgs::ImageConstPtr& img) {
     cv::Scalar m = cv::mean(img_hsv);
     this->camera_brightness = static_cast<int>(m[2]);
 
-    ROS_INFO("Camera Brightness: %i", this->camera_brightness);
-
     this->count++;
     if (this->count > this->count_limit) {
         this->count = 0;
-        this->needs_change = true;
+        
+        std_msgs::Bool toggle_msg;
+        toggle_msg.data = true;
+        this->toggle_camera_pub.publish(toggle_msg);
     }
 }

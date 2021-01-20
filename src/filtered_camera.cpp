@@ -40,6 +40,12 @@ FilteredCamera::FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransp
         this->ir_camera_name + this->raw_image_topic, 1, &FilteredCamera::ir_callback, this);
     this->camera_info_sub = this->nh->subscribe(
         this->ir_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
+    this->toggle_camera_sub = this->nh->subscribe(
+        "brightness_analyser/toggle_camera", 1, &FilteredCamera::toggle_camera_callback, this);
+}
+
+void FilteredCamera::toggle_camera_callback(const std_msgs::Bool::ConstPtr& msg) {
+    this->needs_change = true;
 }
 
 void FilteredCamera::ir_callback(const sensor_msgs::ImageConstPtr& img) {
@@ -60,13 +66,6 @@ void FilteredCamera::ir_callback(const sensor_msgs::ImageConstPtr& img) {
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
     this->image_pub.publish(msg);
-
-    this->count++;
-    if (this->count > this->count_limit) {
-        this->count = 0;
-        this->is_ir = false;
-        this->needs_change = true;
-    }
 }
 
 void FilteredCamera::rgb_callback(const sensor_msgs::ImageConstPtr& img) {
@@ -83,13 +82,6 @@ void FilteredCamera::rgb_callback(const sensor_msgs::ImageConstPtr& img) {
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
     this->image_pub.publish(msg);
-
-    this->count++;
-    if (this->count > this->count_limit) {
-        this->count = 0;
-        this->is_ir = true;
-        this->needs_change = true;
-    }
 }
 
 void FilteredCamera::camera_info_callback(const sensor_msgs::CameraInfo::ConstPtr& info) {
@@ -111,6 +103,7 @@ void FilteredCamera::toggle_camera_subscription() {
         this->camera_info_sub = this->nh->subscribe(
             this->rgb_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
 
+        this->is_ir = true;
         this->needs_change = false;
     } else if (this->is_ir && this->needs_change) {
         this->image_sub.shutdown();
@@ -121,6 +114,7 @@ void FilteredCamera::toggle_camera_subscription() {
         this->camera_info_sub = this->nh->subscribe(
             this->ir_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
 
+        this->is_ir = false;
         this->needs_change = false;
     }
 }

@@ -18,6 +18,7 @@ class BrightnessAnalyser {
     ros::Subscriber image_sub;
     ros::Subscriber arduino_sub;
     ros::Subscriber ir_state_sub;
+    ros::Publisher toggle_camera_pub;
 
     int arduino_brightness = -1;
     int camera_brightness = -1;
