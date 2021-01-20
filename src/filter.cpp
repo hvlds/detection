@@ -10,6 +10,7 @@
 #include "sensor_msgs/CameraInfo.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Bool.h"
 
 image_transport::Publisher image_pub;
 ros::Subscriber image_sub;
@@ -30,6 +31,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "filter");
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
+    ros::Publisher ir_flag_pub;
     ros::Rate rate(10);
 
     // Assign parsed parameters from ./config/detection/general.yaml
@@ -75,7 +77,16 @@ int main(int argc, char** argv) {
     camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(
         filtered_camera_name + "/camera_info", 1);
 
+    // Publisher of the flag with the information if the IR stream is active
+    ir_flag_pub = n.advertise<std_msgs::Bool>(
+        filtered_camera_name + "/is_ir", 1
+    );
+
     while (ros::ok()) {
+        std_msgs::Bool ir_msg;
+        ir_msg.data = is_ir;
+        ir_flag_pub.publish(ir_msg);
+
         if (is_ir == false && needs_change == true) {
             image_sub.shutdown();
             camera_info_sub.shutdown();
