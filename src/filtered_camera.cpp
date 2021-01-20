@@ -4,27 +4,27 @@ FilteredCamera::FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransp
     this->nh = nh;
 
     // Assign parsed parameters from ./config/detection/general.yaml
-    if (!this->nh->getParam("/detection/ir_camera_name", ir_camera_name)) {
+    if (!this->nh->getParam("/detection/ir_camera_name", this->ir_camera_name)) {
         ROS_ERROR("Failed to get param '/detection/ir_camera_name'");
         this->ir_camera_name = "/camera/ir";
     }
 
-    if (!this->nh->getParam("/detection/rgb_camera_name", rgb_camera_name)) {
+    if (!this->nh->getParam("/detection/rgb_camera_name", this->rgb_camera_name)) {
         ROS_ERROR("Failed to get param '/detection/rgb_camera_name'");
         this->rgb_camera_name = "/camera/rgb";
     }
 
-    if (!this->nh->getParam("/detection/filtered_camera_name", filtered_camera_name)) {
+    if (!this->nh->getParam("/detection/filtered_camera_name", this->filtered_camera_name)) {
         ROS_ERROR("Failed to get param '/detection/filtered_camera_name'");
         this->rgb_camera_name = "/filtered_camera";
     }
 
-    if (!this->nh->getParam("/detection/raw_image_topic", raw_image_topic)) {
+    if (!this->nh->getParam("/detection/raw_image_topic", this->raw_image_topic)) {
         ROS_ERROR("Failed to get param '/detection/raw_image_topic'");
         this->raw_image_topic = "/image_raw";
     }
 
-    if (!this->nh->getParam("/detection/filtered_image_topic", filtered_image_topic)) {
+    if (!this->nh->getParam("/detection/filtered_image_topic", this->filtered_image_topic)) {
         ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
         this->filtered_image_topic = "/image";
     }
@@ -34,8 +34,7 @@ FilteredCamera::FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransp
     this->camera_info_pub = this->nh->advertise<sensor_msgs::CameraInfo>(
         this->filtered_camera_name + "/camera_info", 1);
     this->ir_flag_pub = this->nh->advertise<std_msgs::Bool>(
-        this->filtered_camera_name + "/is_ir", 1
-    );
+        this->filtered_camera_name + "/is_ir", 1);
 
     this->image_sub = this->nh->subscribe(
         this->ir_camera_name + this->raw_image_topic, 1, &FilteredCamera::ir_callback, this);
@@ -102,7 +101,7 @@ void FilteredCamera::toggle_camera_subscription() {
     std_msgs::Bool ir_msg;
     ir_msg.data = this->is_ir;
     this->ir_flag_pub.publish(ir_msg);
-
+    
     if (!this->is_ir && this->needs_change) {
         this->image_sub.shutdown();
         this->camera_info_sub.shutdown();

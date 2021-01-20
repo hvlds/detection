@@ -15,7 +15,7 @@
 #include "std_msgs/String.h"
 
 class FilteredCamera {
-   public:
+   private:
     bool is_ir = true;
     bool needs_change = false;
     int count = 0;
@@ -34,6 +34,7 @@ class FilteredCamera {
     ros::Subscriber camera_info_sub;
     ros::NodeHandle* nh;
 
+   public:
     FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransport* it);
     void ir_callback(const sensor_msgs::ImageConstPtr& img);
     void rgb_callback(const sensor_msgs::ImageConstPtr& img);

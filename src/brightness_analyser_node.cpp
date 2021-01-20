@@ -8,75 +8,17 @@
 #include "ros/ros.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Bool.h"
 
-int arduino_brightness = -1;
-int camera_brightness = -1;
-
-int count = 0;
-int count_limit = 30;
-bool needs_change = false;
-
-void arduinoCallback(const std_msgs::Int32::ConstPtr& msg);
-void imageCallback(const sensor_msgs::ImageConstPtr& img);
+#include "detection/brightness_analyser.hpp"
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "analyser");
-    ros::NodeHandle n;
-    image_transport::ImageTransport it(n);
+    ros::init(argc, argv, "brightness_analyser");
+    ros::NodeHandle nh;
 
-    std::string arduino_topic;
-    if (n.getParam("/detection/arduino_topic", arduino_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/arduino_topic'");
-        arduino_topic = "/brightness";
-    }
-
-    std::string camera_name;
-    if (n.getParam("/detection/filtered_camera_name", camera_name) == false) {
-        ROS_ERROR("Failed to get param '/detection/filtered_camera_name'");
-        camera_name = "/filtered_camera";
-    }
-
-    std::string image_topic;
-    if (n.getParam("/detection/filtered_image_topic", image_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
-        image_topic = "/image";
-    }
-
-    ros::Subscriber image_sub = n.subscribe(
-        camera_name + image_topic, 10, imageCallback);
-    ros::Subscriber arduino_sub = n.subscribe(
-        arduino_topic, 10, arduinoCallback);
-    // ros::Subscriber ir_state_sub = n.subscribe(
-    //     camera_name + "/is_ir", 10, irStateCallback);
-
+    BrightnessAnalyser brightness_analyser = BrightnessAnalyser(&nh);
+    ROS_INFO("PIP");
     ros::spin();
 
     return 0;
-}
-
-void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
-    // Assigned value read from the Arduino
-    arduino_brightness = msg->data;
-}
-
-void imageCallback(const sensor_msgs::ImageConstPtr& img) {
-    // Recieve IR filtered frame as RGB8 format
-    cv_bridge::CvImagePtr cv_ptr;
-    cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
-
-    cv::Mat img_rgb(480, 640, CV_8UC3);
-    cv_ptr->image.convertTo(img_rgb, CV_8UC3);
-
-    // Convert to HSV in order to extract Brightness
-    cv::Mat img_hsv;
-    cv::cvtColor(img_rgb, img_hsv, CV_RGB2HSV);
-
-    cv::Scalar m = cv::mean(img_hsv);
-    camera_brightness = static_cast<int>(m[2]);
-
-    count++;
-    if (count > count_limit) {
-        count = 0;
-        needs_change = true;
-    }
 }
