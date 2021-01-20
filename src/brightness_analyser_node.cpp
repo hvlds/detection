@@ -12,26 +12,12 @@
 int arduino_brightness = -1;
 int camera_brightness = -1;
 
-void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
-    // Assigned value read from the Arduino
-    arduino_brightness = msg->data;
-}
+int count = 0;
+int count_limit = 30;
+bool needs_change = false;
 
-void imageCallback(const sensor_msgs::ImageConstPtr& img) {
-    // Recieve IR filtered frame as RGB8 format
-    cv_bridge::CvImagePtr cv_ptr;
-    cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
-
-    cv::Mat img_rgb(480, 640, CV_8UC3);
-    cv_ptr->image.convertTo(img_rgb, CV_8UC3);
-
-    // Convert to HSV in order to extract Brightness
-    cv::Mat img_hsv;
-    cv::cvtColor(img_rgb, img_hsv, CV_RGB2HSV);
-
-    cv::Scalar m = cv::mean(img_hsv);
-    camera_brightness = static_cast<int>(m[2]);
-}
+void arduinoCallback(const std_msgs::Int32::ConstPtr& msg);
+void imageCallback(const sensor_msgs::ImageConstPtr& img);
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "analyser");
@@ -60,8 +46,37 @@ int main(int argc, char** argv) {
         camera_name + image_topic, 10, imageCallback);
     ros::Subscriber arduino_sub = n.subscribe(
         arduino_topic, 10, arduinoCallback);
+    // ros::Subscriber ir_state_sub = n.subscribe(
+    //     camera_name + "/is_ir", 10, irStateCallback);
 
     ros::spin();
 
     return 0;
+}
+
+void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
+    // Assigned value read from the Arduino
+    arduino_brightness = msg->data;
+}
+
+void imageCallback(const sensor_msgs::ImageConstPtr& img) {
+    // Recieve IR filtered frame as RGB8 format
+    cv_bridge::CvImagePtr cv_ptr;
+    cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
+
+    cv::Mat img_rgb(480, 640, CV_8UC3);
+    cv_ptr->image.convertTo(img_rgb, CV_8UC3);
+
+    // Convert to HSV in order to extract Brightness
+    cv::Mat img_hsv;
+    cv::cvtColor(img_rgb, img_hsv, CV_RGB2HSV);
+
+    cv::Scalar m = cv::mean(img_hsv);
+    camera_brightness = static_cast<int>(m[2]);
+
+    count++;
+    if (count > count_limit) {
+        count = 0;
+        needs_change = true;
+    }
 }

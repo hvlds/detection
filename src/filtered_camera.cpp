@@ -1,122 +1,6 @@
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include "message_filters/subscriber.h"
+#include "detection/filtered_camera.hpp"
 
-#include <iostream>
-#include <opencv2/highgui/highgui.hpp>
-#include <string>
-
-#include "ros/ros.h"
-#include "sensor_msgs/CameraInfo.h"
-#include "std_msgs/Int32.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Bool.h"
-
-image_transport::Publisher image_pub;
-ros::Subscriber image_sub;
-
-ros::Publisher camera_info_pub;
-ros::Subscriber camera_info_sub;
-
-bool is_ir = true;
-bool needs_change = false;
-int count = 0;
-int count_limit = 40;
-
-void irCallback(const sensor_msgs::ImageConstPtr& img);
-void rgbCallback(const sensor_msgs::ImageConstPtr& img);
-void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info);
-
-int main(int argc, char** argv) {
-    ros::init(argc, argv, "filtered_camera");
-    ros::NodeHandle n;
-    image_transport::ImageTransport it(n);
-    ros::Publisher ir_flag_pub;
-    ros::Rate rate(10);
-
-    // Assign parsed parameters from ./config/detection/general.yaml
-    std::string ir_camera_name;
-    if (n.getParam("/detection/ir_camera_name", ir_camera_name) == false) {
-        ROS_ERROR("Failed to get param '/detection/ir_camera_name'");
-        ir_camera_name = "/camera/ir";
-    }
-
-    std::string rgb_camera_name;
-    if (n.getParam("/detection/rgb_camera_name", rgb_camera_name) == false) {
-        ROS_ERROR("Failed to get param '/detection/rgb_camera_name'");
-        rgb_camera_name = "/camera/rgb";
-    }
-
-    std::string filtered_camera_name;
-    if (n.getParam("/detection/filtered_camera_name", filtered_camera_name) == false) {
-        ROS_ERROR("Failed to get param '/detection/filtered_camera_name'");
-        rgb_camera_name = "/filtered_camera";
-    }
-
-    std::string raw_image_topic;
-    if (n.getParam("/detection/raw_image_topic", raw_image_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/raw_image_topic'");
-        raw_image_topic = "/image_raw";
-    }
-
-    std::string filtered_image_topic;
-    if (n.getParam("/detection/filtered_image_topic", filtered_image_topic) == false) {
-        ROS_ERROR("Failed to get param '/detection/filtered_image_topic'");
-        filtered_image_topic = "/image";
-    }
-
-    // Image publisher and subscriber
-    image_sub = n.subscribe(
-        ir_camera_name + raw_image_topic, 1, irCallback);
-    image_pub = it.advertise(
-        filtered_camera_name + filtered_image_topic, 1);
-
-    // Camera Info publisher and subscriber
-    camera_info_sub = n.subscribe(
-        ir_camera_name + "/camera_info", 1, cameraInfoCallback);
-    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(
-        filtered_camera_name + "/camera_info", 1);
-
-    // Publisher of the flag with the information if the IR stream is active
-    ir_flag_pub = n.advertise<std_msgs::Bool>(
-        filtered_camera_name + "/is_ir", 1
-    );
-
-    while (ros::ok()) {
-        std_msgs::Bool ir_msg;
-        ir_msg.data = is_ir;
-        ir_flag_pub.publish(ir_msg);
-
-        if (is_ir == false && needs_change == true) {
-            image_sub.shutdown();
-            camera_info_sub.shutdown();
-
-            image_sub = n.subscribe(
-                rgb_camera_name + raw_image_topic, 1, rgbCallback);
-            camera_info_sub = n.subscribe(
-                rgb_camera_name + "/camera_info", 1, cameraInfoCallback);
-
-            needs_change = false;
-        } else if (is_ir == true && needs_change == true) {
-            image_sub.shutdown();
-            camera_info_sub.shutdown();
-
-            image_sub = n.subscribe(
-                ir_camera_name + raw_image_topic, 1, irCallback);
-            camera_info_sub = n.subscribe(
-                ir_camera_name + "/camera_info", 1, cameraInfoCallback);
-
-            needs_change = false;
-        }
-
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-    return 0;
-}
-
-void irCallback(const sensor_msgs::ImageConstPtr& img) {
+void FilteredCamera::irCallback(const sensor_msgs::ImageConstPtr& img) {
     // Recieve IR frame from camera in MONO16 (GRAY16 in OpenNI2) format
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO16);
@@ -133,17 +17,17 @@ void irCallback(const sensor_msgs::ImageConstPtr& img) {
 
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
-    image_pub.publish(msg);
+    this->image_pub.publish(msg);
 
-    count++;
-    if (count > count_limit) {
-        count = 0;
-        is_ir = false;
-        needs_change = true;
+    this->count++;
+    if (this->count > this->count_limit) {
+        this->count = 0;
+        this->is_ir = false;
+        this->needs_change = true;
     }
 }
 
-void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
+void FilteredCamera::rgbCallback(const sensor_msgs::ImageConstPtr& img) {
     // Recieve RGB frame from camera in RGB8 format
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
@@ -156,17 +40,17 @@ void rgbCallback(const sensor_msgs::ImageConstPtr& img) {
 
     // Publish the new formatted image with same header as the input image
     msg->header = img->header;
-    image_pub.publish(msg);
+    this->image_pub.publish(msg);
 
-    count++;
-    if (count > count_limit) {
-        count = 0;
-        is_ir = true;
-        needs_change = true;
+    this->count++;
+    if (this->count > this->count_limit) {
+        this->count = 0;
+        this->is_ir = true;
+        this->needs_change = true;
     }
 }
 
-void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info) {
+void FilteredCamera::cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info) {
     sensor_msgs::CameraInfo camera_info;
-    camera_info_pub.publish(*info);
+    this->camera_info_pub.publish(*info);
 }
