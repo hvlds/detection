@@ -20,10 +20,23 @@ class FilteredCamera {
     bool needs_change = false;
     int count = 0;
     int count_limit = 40;
+
+    std::string ir_camera_name;
+    std::string rgb_camera_name;
+    std::string filtered_camera_name;
+    std::string raw_image_topic;
+    std::string filtered_image_topic;
+
     image_transport::Publisher image_pub;
     ros::Publisher camera_info_pub;
+    ros::Publisher ir_flag_pub;
+    ros::Subscriber image_sub;
+    ros::Subscriber camera_info_sub;
+    ros::NodeHandle* nh;
 
-    void irCallback(const sensor_msgs::ImageConstPtr& img);
-    void rgbCallback(const sensor_msgs::ImageConstPtr& img);
-    void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info);
+    FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransport* it);
+    void ir_callback(const sensor_msgs::ImageConstPtr& img);
+    void rgb_callback(const sensor_msgs::ImageConstPtr& img);
+    void camera_info_callback(const sensor_msgs::CameraInfo::ConstPtr& info);
+    void toggle_camera_subscription();
 };
