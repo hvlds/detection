@@ -20,11 +20,11 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_executable(filter src/filter.cpp)
-target_link_libraries(filter ${catkin_LIBRARIES})
+add_executable(filtered_camera src/filtered_camera.cpp)
+target_link_libraries(filtered_camera ${catkin_LIBRARIES})
 
-add_executable(synchronizer src/synchronizer.cpp)
-target_link_libraries(synchronizer ${catkin_LIBRARIES})
+add_executable(camera_synchronizer src/camera_synchronizer.cpp)
+target_link_libraries(camera_synchronizer ${catkin_LIBRARIES})
 
-add_executable(analyser src/analyser.cpp)
-target_link_libraries(analyser ${catkin_LIBRARIES})
+add_executable(brightness_analyser src/brightness_analyser.cpp)
+target_link_libraries(brightness_analyser ${catkin_LIBRARIES})

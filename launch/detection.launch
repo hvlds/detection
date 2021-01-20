@@ -3,13 +3,13 @@
 
   <node name="serial_node" pkg="rosserial_python" type="serial_node.py"/>
 
-  <node name="synchronizer" pkg="detection" type="synchronizer"/>
+  <node name="camera_synchronizer" pkg="detection" type="camera_synchronizer"/>
 
   <include file="$(find detection)/launch/openni2.launch"/>
 
-  <node name="filter" pkg="detection" type="filter" output="screen"/>
+  <node name="filtered_camera" pkg="detection" type="filtered_camera" output="screen"/>
 
-  <node name="analyser" pkg="detection" type="analyser" output="screen"/>
+  <node name="brightness_analyser" pkg="detection" type="brightness_analyser" output="screen"/>
 
   <include file="$(find detection)/launch/apriltag.launch">
     <arg name="camera_name" value="/filtered_camera"/>

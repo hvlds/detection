@@ -28,7 +28,7 @@ void rgbCallback(const sensor_msgs::ImageConstPtr& img);
 void cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& info);
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "filter");
+    ros::init(argc, argv, "filtered_camera");
     ros::NodeHandle n;
     image_transport::ImageTransport it(n);
     ros::Publisher ir_flag_pub;

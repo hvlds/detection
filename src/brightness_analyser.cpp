@@ -9,12 +9,12 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
 
-int brightness = -1;
+int arduino_brightness = -1;
+int camera_brightness = -1;
 
 void arduinoCallback(const std_msgs::Int32::ConstPtr& msg) {
     // Assigned value read from the Arduino
-    brightness = msg->data;
-    ROS_INFO("brightness: %i", brightness);
+    arduino_brightness = msg->data;
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& img) {
@@ -30,7 +30,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& img) {
     cv::cvtColor(img_rgb, img_hsv, CV_RGB2HSV);
 
     cv::Scalar m = cv::mean(img_hsv);
-    ROS_INFO("camera_brightness %f", m[2]);
+    camera_brightness = static_cast<int>(m[2]);
 }
 
 int main(int argc, char** argv) {
