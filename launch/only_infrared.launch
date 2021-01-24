@@ -3,7 +3,7 @@
 
   <node name="camera_synchronizer" pkg="detection" type="camera_synchronizer_node"/>
 
-  <include file="$(find detection)/launch/openni2.launch"/>
+  <include file="$(find detection)/launch/infrared_openni2.launch"/>
 
   <node name="filtered_camera" pkg="detection" type="filtered_camera_node" output="screen"/>
 
