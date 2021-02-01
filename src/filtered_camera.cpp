@@ -94,7 +94,7 @@ void FilteredCamera::toggle_camera_subscription() {
     ir_msg.data = this->is_ir;
     this->ir_flag_pub.publish(ir_msg);
     
-    if (!this->is_ir && this->needs_change) {
+    if (this->is_ir && this->needs_change) {
         this->image_sub.shutdown();
         this->camera_info_sub.shutdown();
 
@@ -103,9 +103,9 @@ void FilteredCamera::toggle_camera_subscription() {
         this->camera_info_sub = this->nh->subscribe(
             this->rgb_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
 
-        this->is_ir = true;
+        this->is_ir = false;
         this->needs_change = false;
-    } else if (this->is_ir && this->needs_change) {
+    } else if (!this->is_ir && this->needs_change) {
         this->image_sub.shutdown();
         this->camera_info_sub.shutdown();
 
@@ -114,7 +114,7 @@ void FilteredCamera::toggle_camera_subscription() {
         this->camera_info_sub = this->nh->subscribe(
             this->ir_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
 
-        this->is_ir = false;
+        this->is_ir = true;
         this->needs_change = false;
     }
 }
