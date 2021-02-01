@@ -1,0 +1,15 @@
+<launch>
+  <rosparam command="load" file="$(find detection)/config/detection/general.yaml"/>
+
+  <node name="camera_synchronizer" pkg="detection" type="camera_synchronizer_node"/>
+
+  <include file="$(find detection)/launch/openni2.launch"/>
+
+  <node name="filtered_camera" pkg="detection" type="filtered_camera_node" output="screen"/>
+
+  <!-- <include file="$(find detection)/launch/apriltag.launch">
+    <arg name="camera_name" value="/filtered_camera"/>
+    <arg name="image_topic" value="/image"/>
+  </include> -->
+
+</launch>  

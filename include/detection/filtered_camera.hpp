@@ -16,7 +16,7 @@
 
 class FilteredCamera {
    private:
-    bool is_ir = true;
+    bool is_ir = false;
     bool needs_change = false;
     int count = 0;
     int count_limit = 40;

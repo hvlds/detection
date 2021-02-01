@@ -37,9 +37,10 @@ FilteredCamera::FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransp
         this->filtered_camera_name + "/is_ir", 1);
 
     this->image_sub = this->nh->subscribe(
-        this->ir_camera_name + this->raw_image_topic, 1, &FilteredCamera::ir_callback, this);
+            this->rgb_camera_name + this->raw_image_topic, 1, &FilteredCamera::rgb_callback, this);
     this->camera_info_sub = this->nh->subscribe(
-        this->ir_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
+        this->rgb_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
+
     this->toggle_camera_sub = this->nh->subscribe(
         "brightness_analyser/toggle_camera", 1, &FilteredCamera::toggle_camera_callback, this);
 }
