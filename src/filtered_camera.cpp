@@ -42,7 +42,7 @@ FilteredCamera::FilteredCamera(ros::NodeHandle* nh, image_transport::ImageTransp
         this->rgb_camera_name + "/camera_info", 1, &FilteredCamera::camera_info_callback, this);
 
     this->toggle_camera_sub = this->nh->subscribe(
-        "brightness_analyser/toggle_camera", 1, &FilteredCamera::toggle_camera_callback, this);
+        "/brightness_analyser/toggle_camera", 1, &FilteredCamera::toggle_camera_callback, this);
 }
 
 void FilteredCamera::toggle_camera_callback(const std_msgs::Bool::ConstPtr& msg) {
